@@ -7,8 +7,8 @@ services:
     image: mysql:8.0
     container_name: smartretailx-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: smartretail123
-      MYSQL_DATABASE: smartretailx
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
     ports:
       - "3306:3306"
     volumes:
@@ -28,12 +28,12 @@ services:
     ports:
       - "3001:3001"
     environment:
-      PORT: 3001
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: smartretail123
-      DB_NAME: smartretailx
-      JWT_SECRET: smartretailx-super-secret-jwt-key
+      PORT: ${USER_SERVICE_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       mysql:
         condition: service_healthy
@@ -48,12 +48,12 @@ services:
     ports:
       - "3002:3002"
     environment:
-      PORT: 3002
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: smartretail123
-      DB_NAME: smartretailx
-      JWT_SECRET: smartretailx-super-secret-jwt-key
+      PORT: ${PRODUCT_SERVICE_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       mysql:
         condition: service_healthy
@@ -68,13 +68,13 @@ services:
     ports:
       - "3003:3003"
     environment:
-      PORT: 3003
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: smartretail123
-      DB_NAME: smartretailx
-      JWT_SECRET: smartretailx-super-secret-jwt-key
-      INVENTORY_SERVICE_URL: http://inventory-service:3004
+      PORT: ${ORDER_SERVICE_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      INVENTORY_SERVICE_URL: ${INVENTORY_SERVICE_URL}
     depends_on:
       mysql:
         condition: service_healthy
@@ -91,12 +91,12 @@ services:
     ports:
       - "3004:3004"
     environment:
-      PORT: 3004
-      DB_HOST: mysql
-      DB_USER: root
-      DB_PASSWORD: smartretail123
-      DB_NAME: smartretailx
-      JWT_SECRET: smartretailx-super-secret-jwt-key
+      PORT: ${INVENTORY_SERVICE_PORT}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       mysql:
         condition: service_healthy
