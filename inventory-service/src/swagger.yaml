@@ -1,0 +1,108 @@
+openapi: 3.0.0
+info:
+  title: SmartRetailX Inventory Management API
+  version: 1.0.0
+  description: Manages stock levels, reservations and low-stock alerts
+servers:
+  - url: http://localhost:3004/api/v1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /inventory:
+    get:
+      summary: List all inventory (admin only)
+      tags: [Inventory]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Full inventory list
+    post:
+      summary: Add product to inventory (admin only)
+      tags: [Inventory]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_id, product_name, quantity]
+              properties:
+                product_id: { type: integer }
+                product_name: { type: string }
+                quantity: { type: integer }
+                reorder_level: { type: integer, default: 10 }
+                warehouse_location: { type: string }
+      responses:
+        '201':
+          description: Inventory updated
+
+  /inventory/{productId}:
+    get:
+      summary: Get stock level for a product
+      tags: [Inventory]
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Stock info including available quantity
+
+  /inventory/{productId}/restock:
+    patch:
+      summary: Restock a product (admin only)
+      tags: [Inventory]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity: { type: integer, example: 100 }
+      responses:
+        '200':
+          description: Stock updated
+
+  /inventory/reserve:
+    post:
+      summary: Reserve stock for an order (internal)
+      tags: [Inventory]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_id: { type: integer }
+                quantity: { type: integer }
+      responses:
+        '200':
+          description: Stock reserved
+        '400':
+          description: Insufficient stock
+
+  /inventory/alerts/low-stock:
+    get:
+      summary: Get low stock alerts (admin only)
+      tags: [Inventory]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Products below reorder level

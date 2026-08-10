@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+
+  # ── MySQL Database ──────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: smartretailx-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: smartretail123
+      MYSQL_DATABASE: smartretailx
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - smartretailx-network
+
+  # ── User Service ────────────────────────────────────────────
+  user-service:
+    build: ./user-service
+    container_name: smartretailx-user
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: smartretail123
+      DB_NAME: smartretailx
+      JWT_SECRET: smartretailx-super-secret-jwt-key
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - smartretailx-network
+    restart: on-failure
+
+  # ── Product Service ─────────────────────────────────────────
+  product-service:
+    build: ./product-service
+    container_name: smartretailx-product
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: smartretail123
+      DB_NAME: smartretailx
+      JWT_SECRET: smartretailx-super-secret-jwt-key
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - smartretailx-network
+    restart: on-failure
+
+  # ── Order Service ───────────────────────────────────────────
+  order-service:
+    build: ./order-service
+    container_name: smartretailx-order
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: 3003
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: smartretail123
+      DB_NAME: smartretailx
+      JWT_SECRET: smartretailx-super-secret-jwt-key
+      INVENTORY_SERVICE_URL: http://inventory-service:3004
+    depends_on:
+      mysql:
+        condition: service_healthy
+      inventory-service:
+        condition: service_started
+    networks:
+      - smartretailx-network
+    restart: on-failure
+
+  # ── Inventory Service ───────────────────────────────────────
+  inventory-service:
+    build: ./inventory-service
+    container_name: smartretailx-inventory
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: smartretail123
+      DB_NAME: smartretailx
+      JWT_SECRET: smartretailx-super-secret-jwt-key
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - smartretailx-network
+    restart: on-failure
+
+volumes:
+  mysql_data:
+
+networks:
+  smartretailx-network:
+    driver: bridge
