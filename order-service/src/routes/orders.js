@@ -55,6 +55,18 @@ router.post('/', verifyToken, async (req, res) => {
 
     await conn.commit();
 
+    // Notify user and admin
+    const NOTIFICATION_SERVICE = process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3006';
+    try {
+      await axios.post(`${NOTIFICATION_SERVICE}/api/v1/notifications`, {
+        user_id: req.user.userId,
+        type: 'order_placed',
+        title: '🛍️ Order Placed Successfully',
+        message: `Your order #${orderId} has been placed for $${total.toFixed(2)}. We are processing it now.`,
+        order_id: orderId
+      }, { headers: { Authorization: req.headers['authorization'] } });
+    } catch (e) { console.log('Notification failed silently'); }
+
     res.status(201).json({
       message: 'Order placed successfully',
       orderId,

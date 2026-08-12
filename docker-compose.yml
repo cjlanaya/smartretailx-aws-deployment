@@ -2,7 +2,6 @@ version: '3.8'
 
 services:
 
-  # ── MySQL Database ──────────────────────────────────────────
   mysql:
     image: mysql:8.0
     container_name: smartretailx-mysql
@@ -21,15 +20,14 @@ services:
     networks:
       - smartretailx-network
 
-  # ── User Service ────────────────────────────────────────────
   user-service:
     build: ./user-service
     container_name: smartretailx-user
     ports:
       - "3001:3001"
     environment:
-      PORT: ${USER_SERVICE_PORT}
-      DB_HOST: ${DB_HOST}
+      PORT: 3001
+      DB_HOST: mysql
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
@@ -41,15 +39,14 @@ services:
       - smartretailx-network
     restart: on-failure
 
-  # ── Product Service ─────────────────────────────────────────
   product-service:
     build: ./product-service
     container_name: smartretailx-product
     ports:
       - "3002:3002"
     environment:
-      PORT: ${PRODUCT_SERVICE_PORT}
-      DB_HOST: ${DB_HOST}
+      PORT: 3002
+      DB_HOST: mysql
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
@@ -61,38 +58,77 @@ services:
       - smartretailx-network
     restart: on-failure
 
-  # ── Order Service ───────────────────────────────────────────
   order-service:
     build: ./order-service
     container_name: smartretailx-order
     ports:
       - "3003:3003"
     environment:
-      PORT: ${ORDER_SERVICE_PORT}
-      DB_HOST: ${DB_HOST}
+      PORT: 3003
+      DB_HOST: mysql
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       JWT_SECRET: ${JWT_SECRET}
-      INVENTORY_SERVICE_URL: ${INVENTORY_SERVICE_URL}
+      NOTIFICATION_SERVICE_URL: http://notification-service:3006
     depends_on:
       mysql:
         condition: service_healthy
-      inventory-service:
+      notification-service:
         condition: service_started
     networks:
       - smartretailx-network
     restart: on-failure
 
-  # ── Inventory Service ───────────────────────────────────────
+  payment-service:
+    build: ./payment-service
+    container_name: smartretailx-payment
+    ports:
+      - "3005:3005"
+    environment:
+      PORT: 3005
+      DB_HOST: mysql
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      NOTIFICATION_SERVICE_URL: http://notification-service:3006
+    depends_on:
+      mysql:
+        condition: service_healthy
+      notification-service:
+        condition: service_started
+    networks:
+      - smartretailx-network
+    restart: on-failure
+
+  notification-service:
+    build: ./notification-service
+    container_name: smartretailx-notification
+    ports:
+      - "3006:3006"
+    environment:
+      PORT: 3006
+      DB_HOST: mysql
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - smartretailx-network
+    restart: on-failure
+
   inventory-service:
     build: ./inventory-service
     container_name: smartretailx-inventory
     ports:
       - "3004:3004"
     environment:
-      PORT: ${INVENTORY_SERVICE_PORT}
-      DB_HOST: ${DB_HOST}
+      PORT: 3004
+      DB_HOST: mysql
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
@@ -103,6 +139,24 @@ services:
     networks:
       - smartretailx-network
     restart: on-failure
+
+  frontend:
+    build: ./frontend
+    container_name: smartretailx-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+      - payment-service
+      - notification-service
+      - inventory-service
+    networks:
+      - smartretailx-network
+    stdin_open: true
 
 volumes:
   mysql_data:

@@ -1,0 +1,96 @@
+openapi: 3.0.0
+info:
+  title: SmartRetailX Notification Service API
+  version: 1.0.0
+  description: Handles in-app notifications for customers and admins
+servers:
+  - url: http://localhost:3006/api/v1
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /notifications:
+    post:
+      summary: Create a notification (internal service call)
+      tags: [Notifications]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id, type, title, message]
+              properties:
+                user_id: { type: integer }
+                type: { type: string, example: order_placed }
+                title: { type: string }
+                message: { type: string }
+                order_id: { type: integer }
+      responses:
+        '201':
+          description: Notification created
+
+  /notifications/my:
+    get:
+      summary: Get my notifications
+      tags: [Notifications]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: List of notifications with unread count
+
+  /notifications/unread-count:
+    get:
+      summary: Get unread notification count (for bell icon)
+      tags: [Notifications]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Unread count
+
+  /notifications/{id}/read:
+    patch:
+      summary: Mark notification as read
+      tags: [Notifications]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Marked as read
+
+  /notifications/read-all:
+    patch:
+      summary: Mark all my notifications as read
+      tags: [Notifications]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: All marked as read
+
+  /notifications/admin:
+    get:
+      summary: Get all admin notifications (admin only)
+      tags: [Notifications]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Admin notifications
+
+  /notifications/admin/unread-count:
+    get:
+      summary: Get admin unread count
+      tags: [Notifications]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Admin unread count
