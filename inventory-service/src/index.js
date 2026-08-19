@@ -9,6 +9,7 @@ const inventoryRoutes = require('./routes/inventory');
 const { initDB } = require('./db');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3004;
 
 app.use(helmet());

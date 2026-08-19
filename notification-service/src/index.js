@@ -9,6 +9,7 @@ const notificationRoutes = require('./routes/notifications');
 const { initDB } = require('./db');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3006;
 
 app.use(helmet());

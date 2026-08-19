@@ -10,6 +10,7 @@ const userRoutes = require('./routes/users');
 const { initDB } = require('./db');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
 // Security headers — protects against XSS, clickjacking etc

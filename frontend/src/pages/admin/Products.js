@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../../services/api';
 
 const empty = { name: '', description: '', price: '', category: '', sku: '', image_url: '' };
 
 export default function AdminProducts() {
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [form, setForm] = useState(empty);
   const [editing, setEditing] = useState(null);
@@ -102,13 +104,14 @@ export default function AdminProducts() {
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table>
           <thead>
-            <tr><th>Product</th><th>SKU</th><th>Category</th><th>Price</th><th>Actions</th></tr>
+            <tr><th>ID</th><th>Product</th><th>SKU</th><th>Category</th><th>Price</th><th>Actions</th></tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr><td colSpan={5} style={{ textAlign: 'center', color: '#999', padding: 40 }}>No products found</td></tr>
             ) : filtered.map(p => (
               <tr key={p.id}>
+                <td style={{ fontSize: 12, color: '#666', fontFamily: 'monospace' }}>#{p.id}</td>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ width: 40, height: 40, borderRadius: 6, overflow: 'hidden', background: '#f3f3f3', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -126,6 +129,7 @@ export default function AdminProducts() {
                 <td>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(p)}>Edit</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => navigate('/admin/inventory', { state: { product_id: p.id, product_name: p.name } })}>Manage stock</button>
                     <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p.id)}>Remove</button>
                   </div>
                 </td>

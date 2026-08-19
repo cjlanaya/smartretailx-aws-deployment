@@ -9,6 +9,7 @@ const productRoutes = require('./routes/products');
 const { initDB } = require('./db');
 
 const app = express();
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3002;
 
 app.use(helmet());

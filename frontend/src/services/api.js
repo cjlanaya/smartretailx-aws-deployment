@@ -1,11 +1,18 @@
 import axios from 'axios';
 
-const USER_API         = 'http://16.171.13.255:3001/api/v1';
-const PRODUCT_API      = 'http://16.170.208.223:3002/api/v1';
-const ORDER_API        = 'http://16.171.253.191:3003/api/v1';
-const PAYMENT_API      = 'http://16.16.183.105:3005/api/v1';
-const NOTIFICATION_API = 'http://51.21.220.231:3006/api/v1';
-const INVENTORY_API    = 'http://51.20.130.93:3004/api/v1';
+// All requests go through the single ALB domain. The ALB routes each
+// request to the correct backend service's target group based on path,
+// matching each service's actual Express mount path (/api/v1/...).
+// This means backend service IP changes (restarts, redeploys, scaling)
+// no longer break the frontend — ECS re-registers targets automatically.
+const BASE = 'http://smartretailx-alb-1309374845.eu-north-1.elb.amazonaws.com';
+
+const USER_API         = `${BASE}/api/v1`;
+const PRODUCT_API      = `${BASE}/api/v1`;
+const ORDER_API        = `${BASE}/api/v1`;
+const PAYMENT_API      = `${BASE}/api/v1`;
+const NOTIFICATION_API = `${BASE}/api/v1`;
+const INVENTORY_API    = `${BASE}/api/v1`;
 
 const getHeaders = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

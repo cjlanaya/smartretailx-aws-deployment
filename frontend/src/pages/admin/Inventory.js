@@ -1,12 +1,21 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getAllInventory, addInventory, restockProduct } from '../../services/api';
 
 export default function AdminInventory() {
+  const location = useLocation();
+  const prefill = location.state || {};
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [form, setForm] = useState({ product_id: '', product_name: '', quantity: '', reorder_level: '10', warehouse_location: '' });
-  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    product_id: prefill.product_id ? String(prefill.product_id) : '',
+    product_name: prefill.product_name || '',
+    quantity: '',
+    reorder_level: '10',
+    warehouse_location: ''
+  });
+  const [showForm, setShowForm] = useState(!!prefill.product_id);
   const [restockQty, setRestockQty] = useState({});
   const [success, setSuccess] = useState('');
 
@@ -58,8 +67,8 @@ export default function AdminInventory() {
           <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 16 }}>Add Product to Inventory</h3>
           <form onSubmit={handleAdd}>
             <div className="grid2" style={{ gap: 12, marginBottom: 14 }}>
-              <div><label>Product ID *</label><input type="number" value={form.product_id} onChange={e => setForm({ ...form, product_id: e.target.value })} required /></div>
-              <div><label>Product Name *</label><input value={form.product_name} onChange={e => setForm({ ...form, product_name: e.target.value })} required /></div>
+              <div><label>Product ID *</label><input type="number" value={form.product_id} onChange={e => setForm({ ...form, product_id: e.target.value })} required disabled={!!prefill.product_id} /></div>
+              <div><label>Product Name *</label><input value={form.product_name} onChange={e => setForm({ ...form, product_name: e.target.value })} required disabled={!!prefill.product_id} /></div>
               <div><label>Quantity *</label><input type="number" value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} required /></div>
               <div><label>Reorder Level</label><input type="number" value={form.reorder_level} onChange={e => setForm({ ...form, reorder_level: e.target.value })} /></div>
               <div><label>Warehouse Location</label><input value={form.warehouse_location} onChange={e => setForm({ ...form, warehouse_location: e.target.value })} /></div>
