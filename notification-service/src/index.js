@@ -7,6 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const notificationRoutes = require('./routes/notifications');
 const { initDB } = require('./db');
+const { startOrderEventsConsumer } = require('./sqsConsumer');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -30,4 +31,7 @@ initDB().then(() => {
     console.log(`Notification Service running on port ${PORT}`);
     console.log(`Swagger docs: http://localhost:${PORT}/api-docs`);
   });
+  // Start consuming order events asynchronously — runs independently
+  // of the HTTP server, does not block or delay startup.
+  startOrderEventsConsumer();
 }).catch(err => { console.error('DB failed:', err); process.exit(1); });

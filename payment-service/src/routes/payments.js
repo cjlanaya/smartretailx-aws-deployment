@@ -41,7 +41,7 @@ router.post('/process', verifyToken, async (req, res) => {
 
   // Send notification
   try {
-    await axios.post(`${NOTIFICATION_SERVICE}/api/v1/notifications`, {
+    await axios.post(`${NOTIFICATION_SERVICE}/notifications`, {
       user_id: req.user.userId,
       type: isSuccess ? 'payment_success' : 'payment_failed',
       title: isSuccess ? '✅ Payment Successful' : '❌ Payment Failed',

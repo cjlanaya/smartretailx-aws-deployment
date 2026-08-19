@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const { getPool } = require('../db');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const { publishOrderPlaced } = require('../sqs');
 
 const router = express.Router();
 const INVENTORY_SERVICE = process.env.INVENTORY_SERVICE_URL || 'http://inventory-service:3004';
@@ -22,14 +23,18 @@ router.post('/', verifyToken, async (req, res) => {
     // Check inventory for each item and reserve stock
     for (const item of items) {
       try {
-        await axios.post(`${INVENTORY_SERVICE}/api/v1/inventory/reserve`, {
+        await axios.post(`${INVENTORY_SERVICE}/inventory/reserve`, {
           product_id: item.product_id,
           quantity: item.quantity
         }, { headers: { Authorization: req.headers['authorization'] } });
       } catch (err) {
+        console.error(`Inventory reservation failed for product ${item.product_id}:`, err.response?.status || err.message);
         await conn.rollback();
-        return res.status(400).json({
-          error: `Insufficient stock for product ${item.product_id}`
+        const status = err.response?.data?.error === 'Insufficient stock' ? 400 : 502;
+        return res.status(status).json({
+          error: err.response?.data?.error === 'Insufficient stock'
+            ? `Insufficient stock for product ${item.product_id}`
+            : 'Unable to process order — please try again shortly'
         });
       }
     }
@@ -55,17 +60,16 @@ router.post('/', verifyToken, async (req, res) => {
 
     await conn.commit();
 
-    // Notify user and admin
-    const NOTIFICATION_SERVICE = process.env.NOTIFICATION_SERVICE_URL || 'http://notification-service:3006';
-    try {
-      await axios.post(`${NOTIFICATION_SERVICE}/api/v1/notifications`, {
-        user_id: req.user.userId,
-        type: 'order_placed',
-        title: '🛍️ Order Placed Successfully',
-        message: `Your order #${orderId} has been placed for $${total.toFixed(2)}. We are processing it now.`,
-        order_id: orderId
-      }, { headers: { Authorization: req.headers['authorization'] } });
-    } catch (e) { console.log('Notification failed silently'); }
+    // Publish an order-placed event to SQS instead of calling
+    // notification-service directly. order-service does not wait for
+    // or depend on notification-service being available — this is the
+    // event-driven, decoupled communication pattern.
+    await publishOrderPlaced({
+      orderId,
+      userId: req.user.userId,
+      total: total.toFixed(2),
+      itemCount: items.length
+    });
 
     res.status(201).json({
       message: 'Order placed successfully',
