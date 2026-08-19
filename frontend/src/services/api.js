@@ -1,10 +1,11 @@
 import axios from 'axios';
 
-const USER_API         = 'http://localhost:3001/api/v1';
-const PRODUCT_API      = 'http://localhost:3002/api/v1';
-const ORDER_API        = 'http://localhost:3003/api/v1';
-const PAYMENT_API      = 'http://localhost:3005/api/v1';
-const NOTIFICATION_API = 'http://localhost:3006/api/v1';
+const USER_API         = 'http://16.171.13.255:3001/api/v1';
+const PRODUCT_API      = 'http://16.170.208.223:3002/api/v1';
+const ORDER_API        = 'http://16.171.253.191:3003/api/v1';
+const PAYMENT_API      = 'http://16.16.183.105:3005/api/v1';
+const NOTIFICATION_API = 'http://51.21.220.231:3006/api/v1';
+const INVENTORY_API    = 'http://51.20.130.93:3004/api/v1';
 
 const getHeaders = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -47,8 +48,7 @@ export const getAdminNotifications = ()   => axios.get(`${NOTIFICATION_API}/noti
 export const getAdminUnreadCount   = ()   => axios.get(`${NOTIFICATION_API}/notifications/admin/unread-count`, getHeaders());
 export const markAdminAllRead      = ()   => axios.patch(`${NOTIFICATION_API}/notifications/admin/read-all`, {}, getHeaders());
 
-// ── Inventory ─────────────────────────────────────────────────
-const INVENTORY_API = 'http://localhost:3004/api/v1';
+// Inventory
 export const getAllInventory  = ()          => axios.get(`${INVENTORY_API}/inventory`, getHeaders());
 export const addInventory     = (data)      => axios.post(`${INVENTORY_API}/inventory`, data, getHeaders());
 export const restockProduct   = (id, qty)   => axios.patch(`${INVENTORY_API}/inventory/${id}/restock`, { quantity: qty }, getHeaders());
