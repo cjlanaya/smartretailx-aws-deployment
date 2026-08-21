@@ -18,7 +18,7 @@ app.use(express.json());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 5000, // TEMP: raised for k6 load testing (Task 6) — revert to 100 after testing
   message: { error: 'Too many requests, please try again later' }
 });
 
